@@ -6,3 +6,4 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 export * from './weather';
+export * from './subscription';

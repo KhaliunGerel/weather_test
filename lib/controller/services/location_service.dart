@@ -32,6 +32,7 @@ class LocationService extends GetxService {
       if (position != null) {
         var positionCity = await apiProvider.getLocation(
             position!.latitude, position!.longitude);
+        if (!positionCity.isOk) throw "";
         var geocode = positionCity.body[0]['state'] ??
             positionCity.body[0]['local_names']['en'];
         return areas.firstWhereOrNull((e) => e.geocode == geocode)?.code ??

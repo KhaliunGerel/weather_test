@@ -18,9 +18,34 @@ let weather_weekly_api =
 export const getWeatherData = functions.https.onRequest(async (req: any, res: any) => {
   const { cityCode } = req.query;
   let todayDate = DateTime.local().setZone('Asia/Ulaanbaatar').toISODate();
+  let result = await weatherApi(todayDate, cityCode);
+  let hourly = result['48'];
 
+  let mnTime = DateTime.local()
+    .setZone('Asia/Ulaanbaatar')
+    .plus({ minutes: 60 })
+    .startOf('hour')
+    .toLocaleString(DateTime.TIME_24_SIMPLE);
+
+  let timeIndex = hourly['validTimeLocal'].indexOf(`${todayDate}T${mnTime}:00+0800`);
+  if (cityCode == 'UVS' || cityCode == 'KHO' || cityCode == 'BU' || cityCode == 'GA' || cityCode == 'ZAV')
+    timeIndex = hourly['validTimeLocal'].indexOf(`${todayDate}T${mnTime}:00+0700`);
+
+  let hour24 = {
+    iconCode: hourly.iconCode.splice(timeIndex, 24),
+    relativeHumidity: hourly.relativeHumidity.splice(timeIndex, 24),
+    temperature: hourly.temperature.splice(timeIndex, 24),
+    windSpeed: hourly.windSpeed.splice(timeIndex, 24),
+    validTimeLocal: hourly.validTimeLocal.splice(timeIndex, 24),
+    wxPhraseLong: hourly.wxPhraseLong.splice(timeIndex, 24),
+  };
+  result['48'] = hour24;
+  res.send(result);
+  return;
+});
+
+export const weatherApi = async (todayDate: string, cityCode: string) => {
   let latLng = cityCoordinates[cityCode.toUpperCase()];
-
   let weatherDbLoc = `weatherData/${todayDate}-${cityCode}`;
   const weatherDb = await db.doc(weatherDbLoc).get();
   let result: WeatherData;
@@ -51,27 +76,5 @@ export const getWeatherData = functions.https.onRequest(async (req: any, res: an
     await db.doc(weatherDbLoc).set(result);
   } else result = weatherDb.data();
 
-  let hourly = result['48'];
-
-  let mnTime = DateTime.local()
-    .setZone('Asia/Ulaanbaatar')
-    .plus({ minutes: 60 })
-    .startOf('hour')
-    .toLocaleString(DateTime.TIME_24_SIMPLE);
-
-  let timeIndex = hourly['validTimeLocal'].indexOf(`${todayDate}T${mnTime}:00+0800`);
-  if (cityCode == 'UVS' || cityCode == 'KHO' || cityCode == 'BU' || cityCode == 'GA' || cityCode == 'ZAV')
-    timeIndex = hourly['validTimeLocal'].indexOf(`${todayDate}T${mnTime}:00+0700`);
-
-  let hour24 = {
-    iconCode: hourly.iconCode.splice(timeIndex, 24),
-    relativeHumidity: hourly.relativeHumidity.splice(timeIndex, 24),
-    temperature: hourly.temperature.splice(timeIndex, 24),
-    windSpeed: hourly.windSpeed.splice(timeIndex, 24),
-    validTimeLocal: hourly.validTimeLocal.splice(timeIndex, 24),
-    wxPhraseLong: hourly.wxPhraseLong.splice(timeIndex, 24),
-  };
-  result['48'] = hour24;
-  res.send(result);
-  return;
-});
+  return result;
+};

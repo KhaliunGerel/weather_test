@@ -13,3 +13,9 @@ export type WeatherData = {
   };
   week: any;
 };
+
+export type EmailService = {
+  email: string;
+  subject: string;
+  html: string;
+};
