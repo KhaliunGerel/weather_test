@@ -1,9 +1,8 @@
-import * as functions from "firebase-functions";
+const admin = require('firebase-admin');
 
-// // Start writing Firebase Functions
-// // https://firebase.google.com/docs/functions/typescript
-//
-// export const helloWorld = functions.https.onRequest((request, response) => {
-//   functions.logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+var serviceAccount = require('../weather-khln-firebase-adminsdk-ee90i-84704d0ab3');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+export * from './weather';

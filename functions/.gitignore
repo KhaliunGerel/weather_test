@@ -7,3 +7,5 @@ typings/
 
 # Node.js dependency directory
 node_modules/
+/src/keys.ts
+/weather-khln-firebase-adminsdk-ee90i-84704d0ab3.json
